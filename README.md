@@ -1,2 +1,6 @@
 # hznu-artificial-intelligence
-HZNU AI Experiment
+```
+exp_env 实验环境
+ppt 	ppt 存放处
+report 	实验报告
+```
