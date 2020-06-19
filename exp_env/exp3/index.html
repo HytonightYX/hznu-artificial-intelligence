@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<meta name="description" content="Xavier Deschuyteneer's Blog" />
+<meta name="author" content="Xavier Deschuyteneer" />
+
+<meta charset="utf8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="index.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.15.1/cytoscape.min.js"></script>
+</head>
+
+<style>
+  #cy {
+    height: 400px;
+    width: 400px;
+    position: relative;
+    left: 100;
+    top: 100;
+  }
+
+  .containter {
+    width: 300px;
+  }
+  .containter table {
+    width: 150px;
+    float: left;
+  }
+</style>
+
+<title>蚁群算法求解 TSP</title>
+
+<body>
+  <div>写入节点</div>
+  <input id="in" />
+  <button onclick="exp()" id="export_button">Export</button>
+  <button onclick="validate()" id="validate_button">Draw</button>
+  <button onclick="next()" id="next_button">Next</button>
+  <input type="checkbox" id="undirected" />Undirected<br />
+  <p id="out"></p>
+  <br />
+
+  <div>结果展示</div>
+  <div id="cy"></div>
+
+  <div style="width: 600; height: auto; position: relative;">
+    <table
+      border="0"
+      width="300"
+      border="0"
+      align="left"
+      cellpadding="0"
+      cellspacing="0"
+      style="margin-right: 10px;"
+      id="costs"
+    ></table>
+
+    <table
+      border="0"
+      width="300"
+      border="0"
+      align="left"
+      cellpadding="0"
+      cellspacing="0"
+      id="pheromones"
+    ></table>
+  </div>
+</body>
