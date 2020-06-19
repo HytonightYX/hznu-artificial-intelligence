@@ -1,180 +1,160 @@
-/*
-    Eight Puzzle Solver
-    by Kory Becker 2015 http://primaryobjects.com/kory-becker
+/**
+ * A* 算法解决八数码问题
+ * 参考: https://blog.goodaudience.com/solving-8-puzzle-using-a-algorithm-7b509c331288
+ * 
+ * @author husiyuan
+ */
 
-    Solves the eight-puzzle (sliding block puzzle) by using the A* algorithm.
+class PuzzleManager {
+  constructor(start, end) {
+    this.start = start || [
+      2, 8, 3,
+      1, 6, 4,
+      7, 0, 5
+    ];
 
-    The program works by taking the starting state and evaluating the next possible moves, applying a cost value to each next state.
-    The cost (h) of a state is calculated by adding up the manhatten distance of each block from their goal state.
-    For example, if a particular block is 3 moves left and 2 moves down from its goal state, then this adds 5 to the cost. You repeat this for the other blocks.
-    A cost (g) is also applied to each state, which cooresponds to the depth to reach this part of the path. This provides a penalty to re-visiting an already-visited state.
-    The A* algorithm then selects the next state.
-    
-    Each child state records it's parent, so that once a solution is found, you can walk backwards up the parent path to return the solution.
-    Compare the results of this program to online versions, using A* and manhatten distance:
-    https://n-puzzle-solver.appspot.com/
-    http://himanshug.info/8puzzle/8puzzle.html
-*/
+    this.end = end || [
+      1, 2, 3,
+      8, 0, 4,
+      7, 6, 5
+    ];
 
-PuzzleManager = {
-  size: 3,
+    this.size = 3;
+  }
 
-  start: [6, 4, 8,
-    1, 5, 7,
-    0, 3, 2],
-  end: [1, 2, 3,
-    4, 5, 6,
-    7, 8, 0],
+  // h(x) 估价函数
+  h(state) {
+    let cost = 0;
 
-  h: function (state) {
-    // Calculate h-cost of state. Add manhatten distance of each block from its goal.
-    var cost = 0;
-
-    for (var index in state) {
-      var digit = state[index];
+    for (let index in state) {
+      let digit = state[index];
       if (digit != 0) {
-        var goalIndex = PuzzleManager.end.indexOf(digit);
+        let goalIndex = this.end.indexOf(digit);
 
-        // Calculate current position of digit and goal position of digit.
-        var currentPosition = PuzzleManager.getXY(index);
-        var goalPosition = PuzzleManager.getXY(goalIndex);
+        let currentPosition = this.getXY(index);
+        let goalPosition = this.getXY(goalIndex);
 
-        // Calculate manhatten distance from currentPosition to goalPosition.
+        // 根据上面得到的当前状态和目标状态,计算曼哈顿距离,作为代价
         cost += Math.abs(currentPosition.x - goalPosition.x) + Math.abs(currentPosition.y - goalPosition.y);
       }
     }
 
     return cost;
-  },
+  }
 
-  getXY: function (index) {
-    // Returns the {x, y} coordinate for the specified index in the array (3x3 board).
-    var x = index % PuzzleManager.size;
-    var y = Math.floor(index / PuzzleManager.size);
+  getXY(index) {
+    let x = index % this.size;
+    let y = Math.floor(index / this.size);
 
     return { x: x, y: y };
-  },
+  }
 
-  print: function (state) {
-    // Draws a representation of the state.
-    var line = '';
-    var count = 0;
+  // 打印当前棋盘
+  print(state) {
+    let line = '';
+    let count = 0;
 
-    for (var index in state) {
+    for (let index in state) {
       line += state[index] + ', ';
 
-      if (count++ == PuzzleManager.size - 1) {
+      if (count++ == this.size - 1) {
         console.log(line);
         line = '';
         count = 0;
       }
     }
 
-    console.log('(' + PuzzleManager.h(state) + ')');
-  },
+    console.log('(' + this.h(state) + ')');
+  }
 
-  fringe: function (state) {
-    // Returns an array of next available states.
-    var nextStates = [];
-    var blankIndex = state.indexOf(0);
-    var blankPosition = PuzzleManager.getXY(blankIndex);
+  // 检索出下一步
+  fringe(state) {
+    let nextStates = [];
+    let blankIndex = state.indexOf(0);
+    let blankPosition = this.getXY(blankIndex);
 
-    // Right.
-    if (blankIndex + 1 < PuzzleManager.size * PuzzleManager.size) {
-      var tryPosition = PuzzleManager.getXY(blankIndex + 1);
+    // 右
+    if (blankIndex + 1 < this.size * this.size) {
+      let tryPosition = this.getXY(blankIndex + 1);
       if (tryPosition.x > blankPosition.x) {
-        // Valid move.
-        var nextState = state.slice(0);
+        let nextState = state.slice(0);
 
-        // Swap blank with digit to the right.
-        var tmp = nextState[blankIndex];
+        let tmp = nextState[blankIndex];
         nextState[blankIndex] = nextState[blankIndex + 1];
         nextState[blankIndex + 1] = tmp;
 
-        // Calculate cost.
-        var cost = PuzzleManager.h(nextState);
+        let cost = this.h(nextState);
         nextStates.push({ state: nextState, h: cost, direction: 'L' });
       }
     }
 
-    // Left.
+    // 左
     if (blankIndex - 1 > -1) {
-      var tryPosition = PuzzleManager.getXY(blankIndex - 1);
+      let tryPosition = this.getXY(blankIndex - 1);
       if (tryPosition.x < blankPosition.x) {
-        // Valid move.
-        var nextState = state.slice(0);
+        let nextState = state.slice(0);
 
-        // Swap blank with digit to the right.
-        var tmp = nextState[blankIndex];
+        let tmp = nextState[blankIndex];
         nextState[blankIndex] = nextState[blankIndex - 1];
         nextState[blankIndex - 1] = tmp;
 
-        // Calculate cost.
-        var cost = PuzzleManager.h(nextState);
+        let cost = this.h(nextState);
         nextStates.push({ state: nextState, h: cost, direction: 'R' });
       }
     }
 
-    // Down.
-    if (blankIndex + PuzzleManager.size < PuzzleManager.size * PuzzleManager.size) {
-      var tryPosition = PuzzleManager.getXY(blankIndex + PuzzleManager.size);
+    // 下
+    if (blankIndex + this.size < this.size * this.size) {
+      let tryPosition = this.getXY(blankIndex + this.size);
       if (tryPosition.y > blankPosition.y) {
-        // Valid move.
-        var nextState = state.slice(0);
+        let nextState = state.slice(0);
 
-        // Swap blank with digit to the right.
-        var tmp = nextState[blankIndex];
-        nextState[blankIndex] = nextState[blankIndex + PuzzleManager.size];
-        nextState[blankIndex + PuzzleManager.size] = tmp;
+        let tmp = nextState[blankIndex];
+        nextState[blankIndex] = nextState[blankIndex + this.size];
+        nextState[blankIndex + this.size] = tmp;
 
-        // Calculate cost.
-        var cost = PuzzleManager.h(nextState);
+        let cost = this.h(nextState);
         nextStates.push({ state: nextState, h: cost, direction: 'U' });
       }
     }
 
-    // Up.
-    if (blankIndex - PuzzleManager.size > -1) {
-      var tryPosition = PuzzleManager.getXY(blankIndex - PuzzleManager.size);
+    // 上
+    if (blankIndex - this.size > -1) {
+      let tryPosition = this.getXY(blankIndex - this.size);
       if (tryPosition.y < blankPosition.y) {
-        // Valid move.
-        var nextState = state.slice(0);
+        let nextState = state.slice(0);
 
-        // Swap blank with digit to the right.
-        var tmp = nextState[blankIndex];
-        nextState[blankIndex] = nextState[blankIndex - PuzzleManager.size];
-        nextState[blankIndex - PuzzleManager.size] = tmp;
+        let tmp = nextState[blankIndex];
+        nextState[blankIndex] = nextState[blankIndex - this.size];
+        nextState[blankIndex - this.size] = tmp;
 
-        // Calculate cost.
-        var cost = PuzzleManager.h(nextState);
+        let cost = this.h(nextState);
         nextStates.push({ state: nextState, h: cost, direction: 'D' });
       }
     }
 
     return nextStates;
-  },
+  }
 
-  isGoal: function (state) {
-    return (PuzzleManager.h(state) == 0);
-  },
+  // 是否为目标状态 h(x) = 0
+  isGoal(state) {
+    return (this.h(state) == 0);
+  }
 
-  run: function (state) {
-    // Runs A* algorithm on starting state and returns list of states to goal.
-    var result = null;
-    var visited = {};
-    var currentState = { state: state, h: PuzzleManager.h(state) + 1, g: 0 };
-    var states = [currentState]; // list of discovered states
-    var count = 0;
+  boot(state) {
+    let result = null;
+    let visited = {};
+    let currentState = { state: state, h: this.h(state) + 1, g: 0 };
+    let states = [currentState]; // list of discovered states
+    let count = 0;
 
-    while (!PuzzleManager.isGoal(currentState.state) && count++ < 99999) {
-      // Mark this state as visited, so we don't go here again.
+    while (!this.isGoal(currentState.state) && count++ < 99999) {
+      // 记录已经走过的状态, 避免下次重复
       visited[JSON.stringify(currentState.state)] = 1;
 
-      // Get list of fringe states.
-      currentState.children = PuzzleManager.fringe(currentState.state);
+      currentState.children = this.fringe(currentState.state);
 
-      // Add undiscovered states to our list of known states.
-      for (var index in currentState.children) {
+      for (let index in currentState.children) {
         currentState.children[index].parent = currentState;
         currentState.children[index].g = currentState.g + 1;
 
@@ -183,74 +163,60 @@ PuzzleManager = {
         }
       }
 
-      // Sort states by cost.
+      // 根据代价(cost)排序
       states = states.sort(function (a, b) { return (a.h + a.g) - (b.h + b.g); });
 
-      // Move to the cheapest state (the first one in the sorted list).
+      // 代价最小的走法(上面排过序了,states[0]就是最小的那个)
       currentState = states[0];
 
-      // Remove this state from the list of unvisited states, so that we don't visit it again (with this f-score).
+      // 从 states 中去掉, 代表已经走过
       states.shift();
     }
 
-    if (PuzzleManager.isGoal(currentState.state)) {
-      var moves = 0;
-      var path = '';
+    if (this.isGoal(currentState.state)) {
+      let moves = 0;
+      let path = '';
       result = {};
       result.states = [];
 
-      // Walk backwards from solution back to starting state.
       while (JSON.stringify(currentState.state) != JSON.stringify(state)) {
-        // Add this state to the front of the array.
         result.states.unshift(currentState);
-
-        // Add the direction to the front.
         path = currentState.direction + path;
-
-        // Follow parent path.
         currentState = currentState.parent;
-
         moves++;
       }
 
-      // Add starting state to front.
       result.states.unshift({ state: state });
       result.moves = moves;
       result.path = path;
     }
 
     return result;
-  },
+  }
 
-  depthCount: function (state) {
-    // Counts how many possible states are at each depth. Evaluates via breadth-first-search.
-    // Usage: console.log(PuzzleManager.depthCount({ state: PuzzleManager.end, g: 0 }));
-    var nodes = [state];
-    var visited = {};
-    var results = {};
+  // 计算深度
+  depthCount(state) {
+    let nodes = [state];
+    let visited = {};
+    let results = {};
 
     while (nodes.length > 0) {
-      // Take first node off list.
-      var node = nodes.shift();
+      let node = nodes.shift();
 
       // Make sure we haven't already visited this node from another branch.
       if (!visited[JSON.stringify(node.state)]) {
-        // Mark node as visited.
         visited[JSON.stringify(node.state)] = 1;
 
         if (!results[node.g]) {
-          // Initialize count for this depth.
           results[node.g] = 0;
         }
 
-        // Increment node count at this depth.
         results[node.g]++;
 
-        // Go deeper and evaluate children nodes, get list of fringe states.
-        var children = PuzzleManager.fringe(node.state);
-        for (var index in children) {
+        let children = this.fringe(node.state);
+        for (let index in children) {
           // Add this new node to the end of the list.
-          var child = children[index];
+          let child = children[index];
           child.g = node.g + 1;
 
           nodes.push(child);
@@ -262,14 +228,17 @@ PuzzleManager = {
   }
 };
 
-// Solve eight-puzzle.
-var result = PuzzleManager.run(PuzzleManager.start);
+const puzzleManager = new PuzzleManager();
 
-// Display game board states.
-for (var i in result.states) {
-  PuzzleManager.print(result.states[i].state);
+// 跑一遍八数码
+// 会将各个状态都保存下来
+let result = puzzleManager.boot(puzzleManager.start);
+
+// 打印每一步的棋盘状态
+for (let i in result.states) {
+  puzzleManager.print(result.states[i].state);
 }
 
-// Display solution path.
-console.log('Solution: ' + result.moves + ' steps');
-console.log(result.path);
+// 输出具体操作步骤
+console.log('完成\n共计: ' + result.moves + ' 步');
+console.log('操作步骤: ', result.path);
