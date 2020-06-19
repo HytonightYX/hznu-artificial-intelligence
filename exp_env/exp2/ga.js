@@ -17,9 +17,9 @@ function initChromosome(num) {
   Object.assign(copy_servers, SERVER_LIST);
   // 随机分配任务给任意的服务器
   for (let c = 0; c < num; c++) {
-    // 染色体, 下标代表任务编号, 值代表服务器, 如[1],代表编号为0的task,由1号服务器处理
+    // 染色体, 下标代表任务编号
     let chromosome = [];
-    // 随机抽取一个任务给随机一台服务器处理
+
     copy_servers.sort(randomSort);
     for (let i = 0; i < task_len; i++) {
       chromosome.push(randomInt(0, server_len - 1));
