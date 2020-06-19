@@ -7,7 +7,6 @@ let pattern = '\((\\s)*(\\d)+,(\\s)*(\\d)+,(\\s)*(\\d)+\)';
 let regex = new RegExp(pattern, 'g');
 let tsp;
 let undirected;
-// Utils
 
 if (typeof (String.prototype.trim) === "undefined") {
   String.prototype.trim = function () {
@@ -47,18 +46,15 @@ function exp() {
   console.log(img);
 }
 
-// graph drawing parameters
-
 layout = {
   name: 'circle',
-
-  fit: true, // whether to fit the viewport to the graph
-  ready: undefined, // callback on layoutready
-  stop: undefined, // callback on layoutstop
-  rStepSize: 10, // the step size for increasing the radius if the nodes don't fit on screen
-  padding: 30, // the padding on fit
-  startAngle: 1.1 * Math.PI, // the position of the first node
-  counterclockwise: false // whether the layout should go counterclockwise (true) or clockwise (false)
+  fit: true,
+  ready: undefined,
+  stop: undefined,
+  rStepSize: 10,
+  padding: 30,
+  startAngle: 1.1 * Math.PI,
+  counterclockwise: false
 };
 
 
@@ -67,8 +63,6 @@ opt = {
   maxZoom: 2,
   name: 'circle',
   fit: true,
-  // style can be specified as plain JSON, a stylesheet string (probably a CSS-like
-  // file pulled from the server), or in a functional format
   style: [
     {
       selector: 'node',
@@ -105,12 +99,8 @@ opt = {
     }
   ],
 
-  ready: function () {
-    // when layout has set initial node positions etc
-  }
+  ready: function () { }
 };
-
-// Graph object definition
 
 function Graph() {
   this.nodes = new Array();
@@ -241,7 +231,6 @@ Graph.prototype.print = function () {
 };
 
 Graph.prototype.draw = function () {
-  // specify the elements in the graph
   opt.elements = {
     nodes: [],
     edges: [],
@@ -257,7 +246,6 @@ Graph.prototype.draw = function () {
     opt.elements.edges.push({ data: { source: edge.source, target: edge.destination } });
   }
 
-  // initialise cytoscape.js on a html dom element with some options:
   cy = cytoscape(options = opt);
   cy.layout(layout);
 };
@@ -283,8 +271,6 @@ Graph.prototype.unvisit = function () {
   }
 };
 
-// Node object definition
-
 function Node(id, value) {
   this.id = id;
   this.value = value;
@@ -298,8 +284,6 @@ Node.prototype.equals = function (y) {
 Node.prototype.toString = function () {
   return "(" + this.id + ", " + this.value + ")";
 };
-
-// Edge object definition
 
 function Edge(source, destination, cost) {
   this.source = source;
@@ -318,8 +302,6 @@ Edge.prototype.equals = function (y) {
 Edge.prototype.toString = function () {
   return "(" + this.source + ", " + this.destination + ", " + this.cost + " - " + this.visited + ")";
 };
-
-// TSP solving with ACS
 
 function TSPACS(graph) {
   this.alpha = 1;
@@ -442,23 +424,16 @@ TSPACS.prototype.unselect = function () {
 TSPACS.prototype.step = function () {
   this.unselect();
   let iteration = 0;
-  /* start at random position */
   let startNodeId = Math.floor(Math.random() * this.graph.nodes.length);
   let startNode = this.graph.nodes[startNodeId];
-  /* mark edge as visited */
   this.graph.visited(startNode.id);
   let path = new Array();
   path.push(startNode.id);
   this.selectDrawedNode(startNode.id);
-  /* generate neighborhood */
   let neighborhood = this.graph.neighborhood(startNode.id);
-  /* while neighborhood not empty */
   while (iteration < this.graph.nodes.length && neighborhood.length != 0) {
-    /* calculate pij for every neighbor*/
     let pijs = this.getPij(neighborhood);
-    /* generate a random number */
     let rand = Math.random();
-    /* find the first neighbor that have a pij >= random number */
     let nextId = pijs.length - 1;
     for (let i = 0; i < pijs.length; ++i) {
       if (pijs[i] > rand) {
@@ -470,17 +445,13 @@ TSPACS.prototype.step = function () {
     path.push(next);
     this.selectDrawedNode(next);
     this.selectDrawedEdge(neighborhood[nextId].source, neighborhood[nextId].destination);
-    /* generate neighborhood */
     neighborhood = this.graph.neighborhood(next);
-    /* mark edge as visited */
     this.graph.visited(next);
     iteration++;
   }
   this.selectDrawedEdge(path[0], path[path.length - 1]);
   this.graph.unvisit();
   console.log(path);
-  /* you have now a tour for a ant*/
-  /* update pheromone table*/
 };
 
 function init() {
